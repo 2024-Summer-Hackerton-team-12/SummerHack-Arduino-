@@ -1,4 +1,4 @@
-//chatgpt유노?
+//PLACIENCY
 
 #include "DHT.h"
 #include "Adafruit_Sensor.h"
@@ -115,23 +115,20 @@ void loop() {
   // LED 제어 및 MQTT 전송
   const char* ledStatus = "";
   if (sensorVal >= 2000) {
-    Serial.print("초록불!");
     digitalWrite(17, HIGH);
-    digitalWrite(32, LOW);
-    digitalWrite(33, LOW);
-    ledStatus = "Green";
+    digitalWrite(32, HIGH);
+    digitalWrite(33, HIGH);
+    ledStatus = "High";
   } else if (sensorVal >= 1000 && sensorVal <= 1999) {
-    Serial.print("노란불!");
     digitalWrite(17, LOW);
     digitalWrite(32, HIGH);
-    digitalWrite(33, LOW);
-    ledStatus = "Yellow";
+    digitalWrite(33, HIGH);
+    ledStatus = "Medium";
   } else if (sensorVal >= 0 && sensorVal <= 999) {
-    Serial.print("빨간불!");
     digitalWrite(17, LOW);
     digitalWrite(32, LOW);
     digitalWrite(33, HIGH);
-    ledStatus = "Red";
+    ledStatus = "Low";
   }
 
   // 온습도 및 LED 상태 MQTT로 전송
