@@ -1,5 +1,3 @@
-//PLACIENCY
-
 #include "DHT.h"
 #include "Adafruit_Sensor.h"
 #include <WiFi.h>
@@ -15,10 +13,10 @@ PubSubClient client(espClient);
 const char* ssid = "bssm_free";
 const char* password = "bssm_free";
 const char* mqtt_server = "broker.mqtt-dashboard.com";
-const int ledPin = 16; 
-const int ledChannel = 0;
-const int freq = 50;
-const int resolution = 16;
+
+const int buttonPin = 23; // 버튼이 연결된 핀 번호
+bool lastButtonState = LOW;
+int ledState = 0;
 
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE  (50)
@@ -85,14 +83,15 @@ void setup() {
   pinMode(33, OUTPUT); // 빨간불
   pinMode(32, OUTPUT); // 노란불
   pinMode(17, OUTPUT); // 초록불
+  pinMode(buttonPin, INPUT); // 버튼 입력 설정
 }
 
 void loop() {
-  delay(100); 
+  delay(1000); 
   float humidity = dht.readHumidity();    // 습도 읽기
   float temperature = dht.readTemperature(); // 섭씨 온도 읽기
   int sensorVal = analogRead(34); // 조도 읽기
-  
+
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
@@ -112,9 +111,27 @@ void loop() {
 
   Serial.println(sensorVal);
 
+  // 버튼 상태 읽기
+  bool buttonState = digitalRead(buttonPin);
+  if (buttonState == HIGH && lastButtonState == LOW) {
+    // 버튼이 눌렸을 때
+    ledState = (ledState + 1) % 3;
+    for (int i = 0; i < 3; i++) {
+      if (i < 3 - ledState) {
+        digitalWrite(33 - i, HIGH);
+      } else {
+        digitalWrite(33 - i, LOW);
+      }
+    }
+    delay(200); // 버튼 디바운싱
+  }
+  lastButtonState = buttonState;
+
   // LED 제어 및 MQTT 전송
   const char* ledStatus = "";
+  /*
   if (sensorVal >= 2000) {
+    delay(2500
     digitalWrite(17, HIGH);
     digitalWrite(32, HIGH);
     digitalWrite(33, HIGH);
@@ -129,6 +146,26 @@ void loop() {
     digitalWrite(32, LOW);
     digitalWrite(33, HIGH);
     ledStatus = "Low";
+  }
+  */
+  if (buttonPin == HIGH) {
+    while (1) {
+    digitalWrite(33, HIGH); //빨강
+    digitalWrite(32, LOW); //노랑
+    digitalWrite(17, LOW); //초록
+    Serial.println("약");
+    delay(2500);
+    digitalWrite(33, HIGH); //빨강
+    digitalWrite(32, HIGH); //노랑
+    digitalWrite(17, LOW); //초록
+    Serial.println("중");
+    delay(2500);
+    digitalWrite(33, HIGH); //빨강
+    digitalWrite(32, HIGH); //노랑
+    digitalWrite(17, HIGH); //초록
+    Serial.println("강");
+    delay(2500);
+    }
   }
 
   // 온습도 및 LED 상태 MQTT로 전송
